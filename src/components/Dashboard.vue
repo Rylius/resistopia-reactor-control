@@ -9,8 +9,8 @@
         </div>
 
         <div>
-            <button class="danger" :disabled="!state.global.effects" @click="disableEffects">OT</button>
-            <button class="danger" :disabled="state.global.effects" @click="enableEffects">IT</button>
+            <button class="danger" :disabled="!simulation.globals.effects" @click="disableEffects">OT</button>
+            <button class="danger" :disabled="simulation.globals.effects" @click="enableEffects">IT</button>
         </div>
 
         <div>
@@ -29,13 +29,10 @@
 <script>
     export default {
         name: 'dashboard',
-        data() {
-            return {
-                state: {
-                    stateMachines: {},
-                    global: {},
-                },
-            };
+        props: {
+            simulation: {
+                required: true,
+            },
         },
         methods: {
             reset() {
