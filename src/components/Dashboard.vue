@@ -70,6 +70,17 @@
 
             <div class="block" style="width: 25%;">
                 <h3>Reaktor</h3>
+                <ul>
+                    <li>
+                        Hitze: {{ Math.round(simulation.stateMachines.reactor.heat) }}°C
+                    </li>
+                    <li>
+                        Produzierte Energie: {{ Math.round(simulation.stateMachines.reactor.energy) }}
+                    </li>
+                    <li>
+                        Verschwendete Energie: {{ Math.round(simulation.stateMachines.reactor.energyWasted) }}
+                    </li>
+                </ul>
             </div>
         </section>
     </section>
