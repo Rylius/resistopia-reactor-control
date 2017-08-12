@@ -1,19 +1,17 @@
 <template>
     <section class="content">
-        <h2>Übersicht</h2>
+        <h2>
+            Übersicht
+            <button @click="refresh">Aktualisieren</button>
+        </h2>
 
-        <div>
-            <button class="danger" @click="reset">Reset</button>
+        <nav>
+            <ul>
+                <li>
+                    <router-link :to="{name: 'backups'}">Backups</router-link>
+                </li>
+            </ul>
 
-            <router-link :to="{name: 'backups'}">Alle Backups</router-link>
-        </div>
-
-        <div>
-            <button class="danger" :disabled="!simulation.globals.effects" @click="disableEffects">OT</button>
-            <button class="danger" :disabled="simulation.globals.effects" @click="enableEffects">IT</button>
-        </div>
-
-        <div>
             <ul>
                 <li>
                     <router-link :to="{name: 'modify-simulation'}">Simulation bearbeiten</router-link>
@@ -22,27 +20,118 @@
                     <router-link :to="{name: 'edit-safe-state'}">Sicheren Zustand bearbeiten</router-link>
                 </li>
             </ul>
-        </div>
+        </nav>
+
+        <section>
+            <button class="danger" :disabled="simulation.globals.effects <= 0" @click="disableEffects">OT</button>
+            <button class="danger" :disabled="simulation.globals.effects > 0" @click="enableEffects">IT</button>
+        </section>
+
+        <section>
+            <h3>
+                Lockdown
+                <span v-if="simulation.globals.lockdown">(aktiv)</span>
+            </h3>
+            <button class="danger" :disabled="simulation.globals.lockdown <= 0" @click="disableLockdown">
+                Aufheben
+            </button>
+            <button class="danger" :disabled="simulation.globals.lockdown > 0" @click="enableLockdown">
+                Erzwingen
+            </button>
+        </section>
+
+        <section class="block-group">
+            <div class="block" style="width: 25%;">
+                <h3>Basis</h3>
+                <ul>
+                    <li>
+                        Strom: {{ Math.round(simulation.stateMachines.base.powerSatisfaction * 100) }}%
+                    </li>
+                    <li>
+                        Trinkwasser: {{ Math.round(simulation.stateMachines.base.drinkingWaterSatisfaction * 100) }}%
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block" style="width: 25%;">
+                <h3>Tarnkern</h3>
+                <ul>
+                    <li v-if="simulation.globals.lockdown <= 0">
+                        Energie: {{ Math.round(simulation.stateMachines.core.energySatisfaction * 100) }}%
+                    </li>
+                    <li>
+                        Naniten: {{ Math.round((simulation.stateMachines.core.nanites / simulation.stateMachines.core.nanitesCapacity) * 100)}}%
+                    </li>
+                    <li v-if="simulation.globals.lockdown <= 0">
+                        Abschaltung {{ moment().to(moment().add(simulation.stateMachines.core.nanites, 'seconds')) }}
+                    </li>
+                </ul>
+            </div>
+
+            <div class="block" style="width: 25%;">
+                <h3>Reaktor</h3>
+            </div>
+        </section>
     </section>
 </template>
 
 <script>
+    import {post} from '../fetch';
+    import moment from 'moment';
+
+    const BACKEND_URL = process.env.RESISTOPIA_BACKEND_URL;
+
     export default {
         name: 'dashboard',
+        data() {
+            return {
+                moment,
+            };
+        },
         props: {
             simulation: {
                 required: true,
             },
         },
         methods: {
-            reset() {
-                // TODO
-            },
             enableEffects() {
-                // TODO
+                post(BACKEND_URL + '/api/v1/globals', {effects: 1})
+                    .then(response => {
+                        this.refresh();
+                    });
             },
             disableEffects() {
-                // TODO
+                if (!confirm('Licht- und Soundsteuerung ausschalten?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {effects: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            enableLockdown() {
+                if (!confirm('Lockdown erzwingen?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {lockdown: 1})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            disableLockdown() {
+                if (!confirm('Lockdown aufheben?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {lockdown: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            refresh() {
+                this.$emit('refresh');
             },
         },
     };
