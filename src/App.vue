@@ -1,7 +1,10 @@
 <template>
     <div id="app">
-        <h1>Reaktor-/Wassersimulation</h1>
-        <router-view v-if="simulation" :simulation="simulation"></router-view>
+        <h1>
+            <router-link :to="{name: 'dashboard'}">Reaktor-/Wassersimulation</router-link>
+        </h1>
+
+        <router-view v-if="simulation" :simulation="simulation" @refresh="fetchSimulation"></router-view>
         <div v-else-if="error">
             <p>
                 Fehler bei der Kommunikation mit dem Backend
