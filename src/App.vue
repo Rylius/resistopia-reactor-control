@@ -32,6 +32,7 @@
             return {
                 simulation: null,
                 error: false,
+                refreshIntervalId: 0,
             };
         },
         methods: {
@@ -58,6 +59,14 @@
         },
         created() {
             this.fetchSimulation();
+
+            this.refreshIntervalId = setInterval(this.fetchSimulation.bind(this), 60000);
+        },
+        beforeDestroy() {
+            if (this.refreshIntervalId) {
+                clearInterval(this.refreshIntervalId);
+                this.refreshIntervalId = 0;
+            }
         },
     };
 </script>
