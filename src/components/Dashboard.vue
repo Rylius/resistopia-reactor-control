@@ -22,22 +22,28 @@
             </ul>
         </nav>
 
-        <section>
-            <button class="danger" :disabled="simulation.globals.effects <= 0" @click="disableEffects">OT</button>
-            <button class="danger" :disabled="simulation.globals.effects > 0" @click="enableEffects">IT</button>
-        </section>
+        <section class="block-group">
+            <div class="block" style="width: 25%;">
+                <h3>
+                    Licht/Sound
+                    <span v-if="simulation.globals.effects > 0">(aktiv)</span>
+                </h3>
+                <button class="danger" :disabled="simulation.globals.effects <= 0" @click="disableEffects">OT</button>
+                <button class="danger" :disabled="simulation.globals.effects > 0" @click="enableEffects">IT</button>
+            </div>
 
-        <section>
-            <h3>
-                Lockdown
-                <span v-if="simulation.globals.lockdown">(aktiv)</span>
-            </h3>
-            <button class="danger" :disabled="simulation.globals.lockdown <= 0" @click="disableLockdown">
-                Aufheben
-            </button>
-            <button class="danger" :disabled="simulation.globals.lockdown > 0" @click="enableLockdown">
-                Erzwingen
-            </button>
+            <div class="block" style="width: 25%;">
+                <h3>
+                    Lockdown
+                    <span v-if="simulation.globals.lockdown > 0">(aktiv)</span>
+                </h3>
+                <button class="danger" :disabled="simulation.globals.lockdown <= 0" @click="disableLockdown">
+                    Aufheben
+                </button>
+                <button class="danger" :disabled="simulation.globals.lockdown > 0" @click="enableLockdown">
+                    Erzwingen
+                </button>
+            </div>
         </section>
 
         <section class="block-group">
