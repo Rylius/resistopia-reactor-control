@@ -13,12 +13,12 @@
             </ul>
 
             <!--<ul>-->
-                <!--<li>-->
-                    <!--<router-link :to="{name: 'modify-simulation'}">Simulation bearbeiten</router-link>-->
-                <!--</li>-->
-                <!--<li>-->
-                    <!--<router-link :to="{name: 'edit-safe-state'}">Sicheren Zustand bearbeiten</router-link>-->
-                <!--</li>-->
+            <!--<li>-->
+            <!--<router-link :to="{name: 'modify-simulation'}">Simulation bearbeiten</router-link>-->
+            <!--</li>-->
+            <!--<li>-->
+            <!--<router-link :to="{name: 'edit-safe-state'}">Sicheren Zustand bearbeiten</router-link>-->
+            <!--</li>-->
             <!--</ul>-->
         </nav>
 
@@ -37,8 +37,20 @@
         </section>
 
         <section class="block-group">
-            <div class="block" style="width: 25%;">
+            <div class="block" style="width: 33.33%;">
                 <h3>Basis</h3>
+                <p>
+                    <button :disabled="!simulation.globals.silentRunning && !simulation.globals.lockdown"
+                            @click="setBaseNormal">
+                        Normalbetrieb
+                    </button>
+                    <button :disabled="!!simulation.globals.silentRunning" @click="setBaseSilentRunning">
+                        Silent Law
+                    </button>
+                    <button :disabled="!!simulation.globals.lockdown" @click="setBaseLockdown">
+                        Lockdown
+                    </button>
+                </p>
                 <ul>
                     <li>
                         Strom: {{ Math.round(simulation.stateMachines.base.powerSatisfaction * 100) }}%
@@ -49,17 +61,17 @@
                 </ul>
             </div>
 
-            <div class="block" style="width: 25%;">
+            <div class="block" style="width: 33.33%;">
                 <h3>Tarnkern</h3>
+                <p>
+                    <button class="danger" :disabled="simulation.globals.camouflage <= 0" @click="disableCamouflage">
+                        Ausschalten
+                    </button>
+                    <button class="danger" :disabled="simulation.globals.camouflage > 0" @click="enableCamouflage">
+                        Einschalten
+                    </button>
+                </p>
                 <ul>
-                    <li>
-                        <button class="danger" :disabled="simulation.globals.camouflage <= 0" @click="disableCamouflage">
-                            Ausschalten
-                        </button>
-                        <button class="danger" :disabled="simulation.globals.camouflage > 0" @click="enableCamouflage">
-                            Einschalten
-                        </button>
-                    </li>
                     <li v-if="simulation.globals.lockdown <= 0">
                         Energie: {{ Math.round(simulation.stateMachines.core.energySatisfaction * 100) }}%
                     </li>
@@ -70,12 +82,13 @@
                         Abschaltung {{ moment().to(moment().add(simulation.stateMachines.core.nanites, 'seconds')) }}
                     </li>
                     <li v-if="simulation.globals.camouflage">
-                        Nächste Änderung {{ moment().to(moment().add(simulation.stateMachines.core.nextEnergyChange, 'seconds')) }}
+                        Nächste Änderung {{ moment().to(moment().add(simulation.stateMachines.core.nextEnergyChange, 'seconds'))
+                        }}
                     </li>
                 </ul>
             </div>
 
-            <div class="block" style="width: 25%;">
+            <div class="block" style="width: 33.33%;">
                 <h3>Reaktor</h3>
                 <ul>
                     <li>
@@ -164,6 +177,36 @@
                 }
 
                 post(BACKEND_URL + '/api/v1/globals', {camouflage: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            setBaseNormal() {
+                if (!confirm('Basis in den Normalbetrieb überführen?\nTarnkern einschalten wäre eine gute Idee.')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {silentRunning: 0, lockdown: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            setBaseSilentRunning() {
+                if (!confirm('Basis in Silent Law überführen?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {silentRunning: 1, lockdown: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            setBaseLockdown() {
+                if (!confirm('Basis in den Lockdown versetzen?\nTarnkern kann dann (sinnvoll) abgeschaltet werden.')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {silentRunning: 0, lockdown: 1})
                     .then(response => {
                         this.refresh();
                     });
