@@ -12,14 +12,14 @@
                 </li>
             </ul>
 
-            <ul>
-                <li>
-                    <router-link :to="{name: 'modify-simulation'}">Simulation bearbeiten</router-link>
-                </li>
-                <li>
-                    <router-link :to="{name: 'edit-safe-state'}">Sicheren Zustand bearbeiten</router-link>
-                </li>
-            </ul>
+            <!--<ul>-->
+                <!--<li>-->
+                    <!--<router-link :to="{name: 'modify-simulation'}">Simulation bearbeiten</router-link>-->
+                <!--</li>-->
+                <!--<li>-->
+                    <!--<router-link :to="{name: 'edit-safe-state'}">Sicheren Zustand bearbeiten</router-link>-->
+                <!--</li>-->
+            <!--</ul>-->
         </nav>
 
         <section class="block-group">
@@ -33,16 +33,6 @@
             </div>
 
             <div class="block" style="width: 25%;">
-                <h3>
-                    Lockdown
-                    <span v-if="simulation.globals.lockdown > 0">(aktiv)</span>
-                </h3>
-                <button class="danger" :disabled="simulation.globals.lockdown <= 0" @click="disableLockdown">
-                    Aufheben
-                </button>
-                <button class="danger" :disabled="simulation.globals.lockdown > 0" @click="enableLockdown">
-                    Erzwingen
-                </button>
             </div>
         </section>
 
@@ -62,14 +52,25 @@
             <div class="block" style="width: 25%;">
                 <h3>Tarnkern</h3>
                 <ul>
+                    <li>
+                        <button class="danger" :disabled="simulation.globals.camouflage <= 0" @click="disableCamouflage">
+                            Ausschalten
+                        </button>
+                        <button class="danger" :disabled="simulation.globals.camouflage > 0" @click="enableCamouflage">
+                            Einschalten
+                        </button>
+                    </li>
                     <li v-if="simulation.globals.lockdown <= 0">
                         Energie: {{ Math.round(simulation.stateMachines.core.energySatisfaction * 100) }}%
                     </li>
                     <li>
                         Naniten: {{ Math.round((simulation.stateMachines.core.nanites / simulation.stateMachines.core.nanitesCapacity) * 100)}}%
                     </li>
-                    <li v-if="simulation.globals.lockdown <= 0">
+                    <li v-if="simulation.globals.camouflage">
                         Abschaltung {{ moment().to(moment().add(simulation.stateMachines.core.nanites, 'seconds')) }}
+                    </li>
+                    <li v-if="simulation.globals.camouflage">
+                        Nächste Änderung {{ moment().to(moment().add(simulation.stateMachines.core.nextEnergyChange, 'seconds')) }}
                     </li>
                 </ul>
             </div>
@@ -143,6 +144,26 @@
                 }
 
                 post(BACKEND_URL + '/api/v1/globals', {lockdown: 0})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            enableCamouflage() {
+                if (!confirm('Tarnkern einschalten?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {camouflage: 1})
+                    .then(response => {
+                        this.refresh();
+                    });
+            },
+            disableCamouflage() {
+                if (!confirm('Tarnkern ausschalten?')) {
+                    return;
+                }
+
+                post(BACKEND_URL + '/api/v1/globals', {camouflage: 0})
                     .then(response => {
                         this.refresh();
                     });
